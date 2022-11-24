@@ -6,17 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.acertainbookstore.business.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.acertainbookstore.business.Book;
-import com.acertainbookstore.business.BookCopy;
-import com.acertainbookstore.business.CertainBookStore;
-import com.acertainbookstore.business.ImmutableStockBook;
-import com.acertainbookstore.business.StockBook;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
 import com.acertainbookstore.client.StockManagerHTTPProxy;
 import com.acertainbookstore.interfaces.BookStore;
@@ -347,6 +343,16 @@ public class BookStoreTest {
 		List<StockBook> booksInStorePostTest = storeManager.getBooks();
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+	}
+	@Test
+	public void testRateBook() throws BookStoreException {
+		Set<BookRating> booksToRate = new HashSet<BookRating>();
+		booksToRate.add(new BookRating(TEST_ISBN, 4));
+
+		client.rateBooks(booksToRate);
+		List<StockBook> listBooks = storeManager.getBooks();
+		StockBook book = listBooks.get(0);
+		assertTrue(book.getAverageRating() ==  4);
 	}
 
 	/**

@@ -336,8 +336,21 @@ public class CertainBookStore implements BookStore, StockManager {
 	 * @see com.acertainbookstore.interfaces.BookStore#rateBooks(java.util.Set)
 	 */
 	@Override
-	public synchronized void rateBooks(Set<BookRating> bookRating) throws BookStoreException {
-		throw new BookStoreException();
+	public synchronized void rateBooks(Set<BookRating> bookRatings) throws BookStoreException {
+		if (bookRatings == null) {
+			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
+		}
+		BookStoreBook book;
+		for (BookRating bookRating : bookRatings) {
+			int rating = bookRating.getRating();
+			int isbn = bookRating.getISBN();
+			validateISBNInStock(isbn);
+			if (rating < 0 || rating > 5) {
+				throw new BookStoreException("Invalid Rating");
+			}
+			book = bookMap.get(isbn);
+			book.addRating(rating);
+		}
 	}
 
 	/*
