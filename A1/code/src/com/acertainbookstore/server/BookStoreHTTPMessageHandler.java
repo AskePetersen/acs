@@ -9,13 +9,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.acertainbookstore.business.*;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import com.acertainbookstore.business.BookCopy;
-import com.acertainbookstore.business.BookEditorPick;
-import com.acertainbookstore.business.CertainBookStore;
-import com.acertainbookstore.business.StockBook;
 import com.acertainbookstore.utils.BookStoreKryoSerializer;
 import com.acertainbookstore.interfaces.BookStoreSerializer;
 import com.acertainbookstore.utils.BookStoreXStreamSerializer;
@@ -130,6 +127,9 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 				getStockBooksByISBN(request, response);
 				break;
 
+			case RATEBOOKS:
+				rateBooks(request, response);
+				break;
 			default:
 				System.err.println("Unsupported message tag.");
 				break;
@@ -246,6 +246,21 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 		response.getOutputStream().write(serializedResponseContent);
 	}
 
+	private void rateBooks(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		byte [] serializedRequestContent = getSerializedRequestContent(request);
+
+		Set<BookRating> bookRatings = (Set<BookRating>) serializer.get().deserialize(serializedRequestContent);
+		BookStoreResponse bookStoreResponse = new BookStoreResponse();
+
+		try {
+			myBookStore.rateBooks(bookRatings);
+		} catch (BookStoreException ex) {
+			bookStoreResponse.setException(ex);
+		}
+
+		byte [] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
+		response.getOutputStream().write(serializedResponseContent);
+	}
 	/**
 	 * Updates editor picks.
 	 *

@@ -34,7 +34,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = true;
+	private static boolean localTest = false;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -258,7 +258,6 @@ public class BookStoreTest {
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
 	}
-
 	/**
 	 * Tests that all books can be retrieved.
 	 *
@@ -354,7 +353,6 @@ public class BookStoreTest {
 		StockBook book = listBooks.get(0);
 		assertTrue(book.getAverageRating() ==  4);
 	}
-
 	/**
 	 * Tear down after class.
 	 *

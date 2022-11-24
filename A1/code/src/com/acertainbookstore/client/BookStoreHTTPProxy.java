@@ -1,6 +1,5 @@
 package com.acertainbookstore.client;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -102,6 +101,7 @@ public class BookStoreHTTPProxy implements BookStore {
 		BookStoreUtility.performHttpExchange(client, bookStoreRequest, serializer.get());
 	}
 
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -136,6 +136,7 @@ public class BookStoreHTTPProxy implements BookStore {
 		return (List<Book>) bookStoreResponse.getList();
 	}
 
+
 	/**
 	 * Stops the proxy.
 	 */
@@ -153,8 +154,10 @@ public class BookStoreHTTPProxy implements BookStore {
 	 * @see com.acertainbookstore.interfaces.BookStore#rateBooks(java.util.Set)
 	 */
 	@Override
-	public void rateBooks(Set<BookRating> bookRating) throws BookStoreException {
-		throw new BookStoreException();
+	public void rateBooks(Set<BookRating> bookRatings) throws BookStoreException{
+		String urlString = serverAddress + "/" + BookStoreMessageTag.RATEBOOKS;
+		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, bookRatings);
+		BookStoreUtility.performHttpExchange(client, bookStoreRequest, serializer.get());
 	}
 
 	/*
