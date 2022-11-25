@@ -1,18 +1,10 @@
 package com.acertainbookstore.business;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import static java.util.Collections.reverseOrder;
 import com.acertainbookstore.interfaces.BookStore;
 import com.acertainbookstore.interfaces.StockManager;
 import com.acertainbookstore.utils.BookStoreConstants;
@@ -317,7 +309,28 @@ public class CertainBookStore implements BookStore, StockManager {
 	 */
 	@Override
 	public synchronized List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
-		throw new BookStoreException();
+		if (numBooks < 0) {
+			throw new BookStoreException("numBooks = " + numBooks + ", but it must be positive");
+		}
+		List<BookStoreBook> listTopRated = bookMap.entrySet()
+				.stream()
+				.map(pair -> pair.getValue())
+				.sorted(reverseOrder(Comparator.comparing(b -> b.getAverageRating())))
+				.collect(Collectors.toList());
+		Set<Integer> tobePicked = new HashSet<>();
+		int rangePicks = listTopRated.size();
+
+		if (rangePicks <= numBooks) {
+			for (int i = 0; i < rangePicks; i++) {
+				tobePicked.add(i);
+			}
+		} else {
+			for (int i = 0; i < numBooks; i++){
+				tobePicked.add(i);
+			}
+		}
+		return tobePicked.stream().map(index -> listTopRated.get(index).immutableBook())
+				.collect(Collectors.toList());
 	}
 
 	/*

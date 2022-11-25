@@ -37,7 +37,7 @@ public enum BookStoreMessageTag {
 	GETSTOCKBOOKSBYISBN,
 
 	/** The tag for the get toprated books. */
-	TOPRATEDBOOKS,
+	GETTOPRATEDBOOKS,
 
 	/** The tag for rating books */
 	RATEBOOKS;

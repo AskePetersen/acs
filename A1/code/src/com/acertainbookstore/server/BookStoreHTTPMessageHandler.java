@@ -131,7 +131,7 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 				rateBooks(request, response);
 				break;
 
-			case TOPRATEDBOOKS:
+			case GETTOPRATEDBOOKS:
 				getTopRatedBooks(request, response);
 				break;
 
@@ -196,6 +196,22 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 		byte[] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
 		response.getOutputStream().write(serializedResponseContent);
 	}
+	private void getTopRatedBooks(HttpServletRequest request, HttpServletResponse response) throws  IOException {
+		String numBooksString = URLDecoder.decode(request.getParameter(BookStoreConstants.BOOK_NUM_PARAM), StandardCharsets.UTF_8);
+		BookStoreResponse bookStoreResponse = new BookStoreResponse();
+
+		try {
+			int numBooks = BookStoreUtility.convertStringToInt(numBooksString);
+			myBookStore.getTopRatedBooks(numBooks);
+		} catch (BookStoreException ex) {
+			bookStoreResponse.setException(ex);
+		}
+
+		byte[] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
+		response.getOutputStream().write(serializedResponseContent);
+	}
+
+
 
 	/**
 	 * Gets the books.
@@ -267,20 +283,7 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 		response.getOutputStream().write(serializedResponseContent);
 	}
 
-	private void getTopRatedBooks(HttpServletRequest request, HttpServletResponse response) throws  IOException {
-		byte[] serializedRequestContent = getSerializedRequestContent(request);
-		int numBooks = (int) serializer.get().deserialize(serializedRequestContent);
-		BookStoreResponse bookStoreResponse = new BookStoreResponse();
 
-		try {
-			myBookStore.getTopRatedBooks(numBooks);
-		} catch (BookStoreException ex) {
-			bookStoreResponse.setException(ex);
-		}
-
-		byte[] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
-		response.getOutputStream().write(serializedResponseContent);
-	}
 	/**
 	 * Updates editor picks.
 	 *

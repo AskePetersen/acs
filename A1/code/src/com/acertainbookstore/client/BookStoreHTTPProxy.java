@@ -4,11 +4,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import com.acertainbookstore.business.CertainBookStore;
 import com.acertainbookstore.business.Book;
 import com.acertainbookstore.business.BookCopy;
 import com.acertainbookstore.business.BookRating;
@@ -26,7 +24,7 @@ import com.acertainbookstore.utils.BookStoreUtility;
 /**
  * {@link BookStoreHTTPProxy} implements the client level synchronous
  * {@link CertainBookStore} API declared in the {@link BookStore} class.
- * 
+ *
  * @see BookStore
  * @see CertainBookStore
  */
@@ -51,7 +49,7 @@ public class BookStoreHTTPProxy implements BookStore {
 	 */
 	public BookStoreHTTPProxy(String serverAddress) throws Exception {
 
-		// Setup the type of serializer.
+		//Setup the type of serializer.
 		if (BookStoreConstants.BINARY_SERIALIZATION) {
 			serializer = ThreadLocal.withInitial(BookStoreKryoSerializer::new);
 		} else {
@@ -94,7 +92,7 @@ public class BookStoreHTTPProxy implements BookStore {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#buyBooks(java.util.Set)
 	 */
 	public void buyBooks(Set<BookCopy> isbnSet) throws BookStoreException {
@@ -106,7 +104,7 @@ public class BookStoreHTTPProxy implements BookStore {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#getBooks(java.util.Set)
 	 */
 	@SuppressWarnings("unchecked")
@@ -118,9 +116,31 @@ public class BookStoreHTTPProxy implements BookStore {
 		return (List<Book>) bookStoreResponse.getList();
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
+		String urlEncodedNumBooks = null;
+		urlEncodedNumBooks = URLEncoder.encode(Integer.toString(numBooks), StandardCharsets.UTF_8);
+		String urlString = serverAddress + "/" + BookStoreMessageTag.GETTOPRATEDBOOKS + "?"
+				+ BookStoreConstants.BOOK_NUM_PARAM + "=" + urlEncodedNumBooks;
+		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, numBooks);
+		BookStoreResponse bookStoreResponse = BookStoreUtility.performHttpExchange(client, bookStoreRequest,
+				serializer.get());
+		return (List<Book>) bookStoreResponse.getList();
+	}
+
+	/*
+	@SuppressWarnings("unchecked")
+	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
+		String urlString = serverAddress + "/" + BookStoreMessageTag.GETTOPRATEDBOOKS;
+		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, numBooks);
+		BookStoreResponse bookStoreResponse = BookStoreUtility.performHttpExchange(client, bookStoreRequest,
+				serializer.get());
+		return (List<Book>) bookStoreResponse.getList();
+	}
+	*/
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#getEditorPicks(int)
 	 */
 	@SuppressWarnings("unchecked")
@@ -134,15 +154,6 @@ public class BookStoreHTTPProxy implements BookStore {
 
 		BookStoreRequest bookStoreRequest = BookStoreRequest.newGetRequest(urlString);
 		BookStoreResponse bookStoreResponse = BookStoreUtility.performHttpExchange(client, bookStoreRequest,
-				serializer.get());
-		return (List<Book>) bookStoreResponse.getList();
-	}
-
-	@Override
-	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
-		String urlString = serverAddress + "/" + BookStoreMessageTag.TOPRATEDBOOKS;
-		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, numBooks);
-		BookStoreResponse bookStoreResponse = BookStoreUtility.performHttpExchange(client, bookStoreRequest, 
 				serializer.get());
 		return (List<Book>) bookStoreResponse.getList();
 	}
@@ -161,7 +172,7 @@ public class BookStoreHTTPProxy implements BookStore {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#rateBooks(java.util.Set)
 	 */
 	@Override
@@ -173,7 +184,7 @@ public class BookStoreHTTPProxy implements BookStore {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#getTopRatedBooks(int)
 	 */
 

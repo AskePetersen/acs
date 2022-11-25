@@ -34,7 +34,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = true;
+	private static boolean localTest = false;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -355,8 +355,25 @@ public class BookStoreTest {
 	}
 
 	@Test
-	public void testGetTopRatedBooks() throws BookStoreException{
-		fail();
+	public void testGetTopRated() throws BookStoreException {
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		Set<StockBook> twoTop = new HashSet<StockBook>();
+		ImmutableStockBook book1 = new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
+				(float) 300, NUM_COPIES, 0, 3, 15, false);
+		ImmutableStockBook book2 = new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
+				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0, 2, 6, false);
+		ImmutableStockBook book3 =  new ImmutableStockBook(TEST_ISBN + 3, "On The Road", "Jack Kerouac", (float) 300, NUM_COPIES, 0, 3, 12, false);
+		//Avg.rating = 5
+		booksToAdd.add(book1);
+		//Avg.rating = 3
+		booksToAdd.add(book2);
+		// Avg.rating = 4
+		booksToAdd.add(book3);
+		twoTop.add(book1);
+		twoTop.add(book3);
+		storeManager.addBooks(booksToAdd);
+		List<Book> topRatedBooks = client.getTopRatedBooks(2);
+		assertTrue(topRatedBooks.containsAll(twoTop) && !topRatedBooks.contains(book2));
 	}
 	/**
 	 * Tear down after class.
