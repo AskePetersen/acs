@@ -4,9 +4,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import com.acertainbookstore.business.CertainBookStore;
 import com.acertainbookstore.business.Book;
 import com.acertainbookstore.business.BookCopy;
 import com.acertainbookstore.business.BookRating;
@@ -136,6 +138,15 @@ public class BookStoreHTTPProxy implements BookStore {
 		return (List<Book>) bookStoreResponse.getList();
 	}
 
+	@Override
+	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
+		String urlString = serverAddress + "/" + BookStoreMessageTag.TOPRATEDBOOKS;
+		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, numBooks);
+		BookStoreResponse bookStoreResponse = BookStoreUtility.performHttpExchange(client, bookStoreRequest, 
+				serializer.get());
+		return (List<Book>) bookStoreResponse.getList();
+	}
+
 
 	/**
 	 * Stops the proxy.
@@ -165,8 +176,5 @@ public class BookStoreHTTPProxy implements BookStore {
 	 * 
 	 * @see com.acertainbookstore.interfaces.BookStore#getTopRatedBooks(int)
 	 */
-	@Override
-	public List<Book> getTopRatedBooks(int numBooks) throws BookStoreException {
-		throw new BookStoreException();
-	}
+
 }

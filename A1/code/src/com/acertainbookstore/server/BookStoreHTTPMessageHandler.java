@@ -130,6 +130,11 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 			case RATEBOOKS:
 				rateBooks(request, response);
 				break;
+
+			case TOPRATEDBOOKS:
+				getTopRatedBooks(request, response);
+				break;
+
 			default:
 				System.err.println("Unsupported message tag.");
 				break;
@@ -247,7 +252,7 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 	}
 
 	private void rateBooks(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		byte [] serializedRequestContent = getSerializedRequestContent(request);
+		byte[] serializedRequestContent = getSerializedRequestContent(request);
 
 		Set<BookRating> bookRatings = (Set<BookRating>) serializer.get().deserialize(serializedRequestContent);
 		BookStoreResponse bookStoreResponse = new BookStoreResponse();
@@ -258,7 +263,22 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 			bookStoreResponse.setException(ex);
 		}
 
-		byte [] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
+		byte[] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
+		response.getOutputStream().write(serializedResponseContent);
+	}
+
+	private void getTopRatedBooks(HttpServletRequest request, HttpServletResponse response) throws  IOException {
+		byte[] serializedRequestContent = getSerializedRequestContent(request);
+		int numBooks = (int) serializer.get().deserialize(serializedRequestContent);
+		BookStoreResponse bookStoreResponse = new BookStoreResponse();
+
+		try {
+			myBookStore.getTopRatedBooks(numBooks);
+		} catch (BookStoreException ex) {
+			bookStoreResponse.setException(ex);
+		}
+
+		byte[] serializedResponseContent = serializer.get().serialize(bookStoreResponse);
 		response.getOutputStream().write(serializedResponseContent);
 	}
 	/**

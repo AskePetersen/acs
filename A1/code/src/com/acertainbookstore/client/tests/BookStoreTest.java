@@ -34,7 +34,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = false;
+	private static boolean localTest = true;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -352,6 +352,11 @@ public class BookStoreTest {
 		List<StockBook> listBooks = storeManager.getBooks();
 		StockBook book = listBooks.get(0);
 		assertTrue(book.getAverageRating() ==  4);
+	}
+
+	@Test
+	public void testGetTopRatedBooks() throws BookStoreException{
+		fail();
 	}
 	/**
 	 * Tear down after class.
