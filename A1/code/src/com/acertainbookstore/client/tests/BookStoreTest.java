@@ -34,7 +34,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = false;
+	private static boolean localTest = true;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -284,6 +284,31 @@ public class BookStoreTest {
 
 		// Make sure the lists equal each other.
 		assertTrue(listBooks.containsAll(booksAdded) && listBooks.size() == booksAdded.size());
+	}
+
+	@Test
+	public void testGetBooksInDemand() throws BookStoreException {
+		Set<StockBook> booksInDemand = new HashSet<>();
+
+		// Books to add to the storeManager
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
+				(float) 300, NUM_COPIES, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
+				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0, 0, 0, false));
+		storeManager.addBooks(booksToAdd);
+		booksInDemand.add(getDefaultBook());
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		booksToBuy.add(new BookCopy(TEST_ISBN, 6));
+
+		try {
+			client.buyBooks(booksToBuy);
+		} catch (BookStoreException ex) {
+			;
+		}
+		List<StockBook> listBooks = storeManager.getBooksInDemand();
+
+		assertTrue(listBooks.containsAll(booksInDemand));
 	}
 
 	/**

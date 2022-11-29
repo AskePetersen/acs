@@ -152,7 +152,16 @@ public class CertainBookStore implements BookStore, StockManager {
 
 		return bookMapValues.stream().map(book -> book.immutableStockBook()).collect(Collectors.toList());
 	}
+	@Override
+	public synchronized List<StockBook> getBooksInDemand() throws BookStoreException {
 
+		Collection<BookStoreBook> bookMapValues = bookMap.values();
+		List<StockBook> listBooksInDemand = bookMapValues.stream().map(pair -> pair.immutableStockBook())
+				.filter(book -> (book.getNumSaleMisses() > 0)).collect(Collectors.toList());
+		System.out.println("This is my print statement: " + listBooksInDemand);
+
+		return listBooksInDemand;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -214,7 +223,7 @@ public class CertainBookStore implements BookStore, StockManager {
 				book = bookMap.get(saleMissEntry.getKey());
 				book.addSaleMiss(saleMissEntry.getValue());
 			}
-			throw new BookStoreException(BookStoreConstants.BOOK + BookStoreConstants.NOT_AVAILABLE);
+			throw new BookStoreException(BookStoreConstants.BOOK + salesMisses + BookStoreConstants.NOT_AVAILABLE);
 		}
 
 		// Then make the purchase.
@@ -260,6 +269,7 @@ public class CertainBookStore implements BookStore, StockManager {
 
 		return isbnSet.stream().map(isbn -> bookMap.get(isbn).immutableBook()).collect(Collectors.toList());
 	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -338,10 +348,7 @@ public class CertainBookStore implements BookStore, StockManager {
 	 * 
 	 * @see com.acertainbookstore.interfaces.StockManager#getBooksInDemand()
 	 */
-	@Override
-	public synchronized List<StockBook> getBooksInDemand() throws BookStoreException {
-		throw new BookStoreException();
-	}
+
 
 	/*
 	 * (non-Javadoc)

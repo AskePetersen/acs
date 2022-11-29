@@ -202,7 +202,7 @@ public class BookStoreHTTPMessageHandler extends AbstractHandler {
 
 		try {
 			int numBooks = BookStoreUtility.convertStringToInt(numBooksString);
-			myBookStore.getTopRatedBooks(numBooks);
+			bookStoreResponse.setList(myBookStore.getTopRatedBooks(numBooks));
 		} catch (BookStoreException ex) {
 			bookStoreResponse.setException(ex);
 		}
