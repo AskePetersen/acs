@@ -94,6 +94,17 @@ public class BookStoreTest {
 				false);
 	}
 
+	public StockBook onTheRoad() {
+		return new ImmutableStockBook(TEST_ISBN + 3, "On The Road",
+				"Jack Kerouac", (float) 300, NUM_COPIES, 0, 0,
+				0, false);
+	}
+
+	public StockBook artOfTheDeal() {
+		return new ImmutableStockBook(TEST_ISBN + 4, "Art of The Deal", "Donald Trump", (float) 20, NUM_COPIES,
+				0,0,0,false);
+	}
+
 	/**
 	 * Method to add a book, executed before every test case is run.
 	 *
@@ -306,10 +317,19 @@ public class BookStoreTest {
 		} catch (BookStoreException ex) {
 			;
 		}
+
 		List<StockBook> listBooks = storeManager.getBooksInDemand();
 
 		assertTrue(listBooks.containsAll(booksInDemand));
 	}
+
+	@Test
+	public void testGetBooksInDemandNonExisting() throws BookStoreException {
+		//Trying to buy a book that does not exist.
+		List<StockBook> listBooks = storeManager.getBooksInDemand();
+		assertTrue(listBooks.size() == 0);
+	}
+
 
 	/**
 	 * Tests that a list of books with a certain feature can be retrieved.
@@ -379,6 +399,27 @@ public class BookStoreTest {
 		assertTrue(book.getAverageRating() ==  4);
 	}
 
+	@Test(expected = BookStoreException.class)
+	public void testRateInvalidBook() throws BookStoreException {
+		Set <BookRating> booksToRate = new HashSet<>();
+		booksToRate.add(new BookRating(TEST_ISBN + 5, 10));
+		client.rateBooks(booksToRate);
+	}
+
+	@Test(expected = BookStoreException.class)
+	public void testRateBookAllOrNothing() throws BookStoreException{
+		Set <BookRating> booksToRate = new HashSet<>();
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		booksToAdd.add(artOfTheDeal());
+		booksToAdd.add(onTheRoad());
+
+		booksToRate.add(new BookRating(TEST_ISBN, 5));
+		booksToRate.add(new BookRating(TEST_ISBN + 3, 5));
+		booksToRate.add(new BookRating(TEST_ISBN + 4, 5));
+		booksToRate.add(new BookRating(TEST_ISBN + 4, 5));
+		booksToRate.add(new BookRating(TEST_ISBN + 1, 6)); //This one does not exist.
+		client.rateBooks(booksToRate);
+	}
 	@Test
 	public void testGetTopRated() throws BookStoreException {
 		Set<StockBook> booksToAdd = new HashSet<StockBook>();
@@ -386,8 +427,11 @@ public class BookStoreTest {
 		ImmutableStockBook book1 = new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
 				(float) 300, NUM_COPIES, 0, 3, 15, false);
 		ImmutableStockBook book2 = new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
-				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0, 2, 6, false);
-		ImmutableStockBook book3 =  new ImmutableStockBook(TEST_ISBN + 3, "On The Road", "Jack Kerouac", (float) 300, NUM_COPIES, 0, 3, 12, false);
+				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0,
+				2, 6, false);
+		ImmutableStockBook book3 =  new ImmutableStockBook(TEST_ISBN + 3, "On The Road",
+				"Jack Kerouac", (float) 300, NUM_COPIES, 0, 3,
+				12, false);
 		//Avg.rating = 5
 		booksToAdd.add(book1);
 		//Avg.rating = 3
@@ -399,6 +443,45 @@ public class BookStoreTest {
 		storeManager.addBooks(booksToAdd);
 		List<Book> topRatedBooks = client.getTopRatedBooks(2);
 		assertTrue(topRatedBooks.containsAll(twoTop) && !topRatedBooks.contains(book2));
+	}
+
+	@Test
+	public void testGetTopRatedAverage() throws BookStoreException{
+		Set <StockBook> booksToAdd = new HashSet<>();
+		booksToAdd.add(onTheRoad());
+		booksToAdd.add(artOfTheDeal());
+		storeManager.addBooks(booksToAdd);
+		Set<BookRating> bookRatings = new HashSet<>();
+		bookRatings.add(new BookRating(TEST_ISBN + 3, 3));
+		bookRatings.add(new BookRating(TEST_ISBN + 3, 1));
+		bookRatings.add(new BookRating(TEST_ISBN + 4, 3));
+		client.rateBooks(bookRatings);
+		List<Book> topRatedBook = client.getTopRatedBooks(1);
+		assertTrue(topRatedBook.contains(artOfTheDeal()));
+	}
+
+	@Test
+	public void testLengthTopRatedAverage() throws BookStoreException{
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		ImmutableStockBook book1 = new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
+				(float) 300, NUM_COPIES, 0, 3, 15, false);
+		ImmutableStockBook book2 = new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
+				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0,
+				2, 6, false);
+		ImmutableStockBook book3 =  new ImmutableStockBook(TEST_ISBN + 3, "On The Road",
+				"Jack Kerouac", (float) 300, NUM_COPIES, 0, 3,
+				12, false);
+		booksToAdd.add(book1);
+		booksToAdd.add(book2);
+		booksToAdd.add(book3);
+		booksToAdd.add(artOfTheDeal());
+		try{
+			storeManager.addBooks(booksToAdd);
+		} catch (BookStoreException ex){
+			;
+		}
+		List<Book> topRatedBook = client.getTopRatedBooks(3);
+		assertEquals(topRatedBook.size(), 3);
 	}
 	/**
 	 * Tear down after class.
