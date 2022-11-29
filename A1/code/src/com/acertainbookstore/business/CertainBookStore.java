@@ -158,8 +158,6 @@ public class CertainBookStore implements BookStore, StockManager {
 		Collection<BookStoreBook> bookMapValues = bookMap.values();
 		List<StockBook> listBooksInDemand = bookMapValues.stream().map(pair -> pair.immutableStockBook())
 				.filter(book -> (book.getNumSaleMisses() > 0)).collect(Collectors.toList());
-		System.out.println("This is my print statement: " + listBooksInDemand);
-
 		return listBooksInDemand;
 	}
 	/*

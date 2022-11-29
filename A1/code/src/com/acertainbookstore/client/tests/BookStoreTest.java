@@ -34,7 +34,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = false;
+	private static boolean localTest = true;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -93,13 +93,11 @@ public class BookStoreTest {
 		return new ImmutableStockBook(TEST_ISBN, "Harry Potter and JUnit", "JK Unit", (float) 10, NUM_COPIES, 0, 0, 0,
 				false);
 	}
-
 	public StockBook onTheRoad() {
 		return new ImmutableStockBook(TEST_ISBN + 3, "On The Road",
 				"Jack Kerouac", (float) 300, NUM_COPIES, 0, 0,
 				0, false);
 	}
-
 	public StockBook artOfTheDeal() {
 		return new ImmutableStockBook(TEST_ISBN + 4, "Art of The Deal", "Donald Trump", (float) 20, NUM_COPIES,
 				0,0,0,false);
@@ -297,40 +295,6 @@ public class BookStoreTest {
 		assertTrue(listBooks.containsAll(booksAdded) && listBooks.size() == booksAdded.size());
 	}
 
-	@Test
-	public void testGetBooksInDemand() throws BookStoreException {
-		Set<StockBook> booksInDemand = new HashSet<>();
-
-		// Books to add to the storeManager
-		Set<StockBook> booksToAdd = new HashSet<StockBook>();
-		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
-				(float) 300, NUM_COPIES, 0, 0, 0, false));
-		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
-				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0, 0, 0, false));
-		storeManager.addBooks(booksToAdd);
-		booksInDemand.add(getDefaultBook());
-		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
-		booksToBuy.add(new BookCopy(TEST_ISBN, 6));
-
-		try {
-			client.buyBooks(booksToBuy);
-		} catch (BookStoreException ex) {
-			;
-		}
-
-		List<StockBook> listBooks = storeManager.getBooksInDemand();
-
-		assertTrue(listBooks.containsAll(booksInDemand));
-	}
-
-	@Test
-	public void testGetBooksInDemandNonExisting() throws BookStoreException {
-		//Trying to buy a book that does not exist.
-		List<StockBook> listBooks = storeManager.getBooksInDemand();
-		assertTrue(listBooks.size() == 0);
-	}
-
-
 	/**
 	 * Tests that a list of books with a certain feature can be retrieved.
 	 *
@@ -388,6 +352,7 @@ public class BookStoreTest {
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
 	}
+
 	@Test
 	public void testRateBook() throws BookStoreException {
 		Set<BookRating> booksToRate = new HashSet<BookRating>();
@@ -402,9 +367,17 @@ public class BookStoreTest {
 	@Test(expected = BookStoreException.class)
 	public void testRateInvalidBook() throws BookStoreException {
 		Set <BookRating> booksToRate = new HashSet<>();
-		booksToRate.add(new BookRating(TEST_ISBN + 5, 10));
+		booksToRate.add(new BookRating(TEST_ISBN + 5, 1));
 		client.rateBooks(booksToRate);
 	}
+
+	@Test(expected = BookStoreException.class)
+	public void testRateBookInvalidRating() throws BookStoreException {
+		Set <BookRating> booksToRate = new HashSet<>();
+		booksToRate.add(new BookRating(TEST_ISBN, -5));
+		client.rateBooks(booksToRate);
+	}
+
 
 	@Test(expected = BookStoreException.class)
 	public void testRateBookAllOrNothing() throws BookStoreException{
@@ -460,6 +433,20 @@ public class BookStoreTest {
 		assertTrue(topRatedBook.contains(artOfTheDeal()));
 	}
 
+	@Test(expected = BookStoreException.class)
+	public void testGetTopRatedInvalidAmount() throws BookStoreException{
+		Set <StockBook> booksToAdd = new HashSet<>();
+		booksToAdd.add(onTheRoad());
+		booksToAdd.add(artOfTheDeal());
+		storeManager.addBooks(booksToAdd);
+		Set<BookRating> bookRatings = new HashSet<>();
+		bookRatings.add(new BookRating(TEST_ISBN + 3, 3));
+		bookRatings.add(new BookRating(TEST_ISBN + 3, 1));
+		bookRatings.add(new BookRating(TEST_ISBN + 4, 3));
+		client.rateBooks(bookRatings);
+		List<Book> topRatedBook = client.getTopRatedBooks(-10);
+	}
+
 	@Test
 	public void testLengthTopRatedAverage() throws BookStoreException{
 		Set<StockBook> booksToAdd = new HashSet<StockBook>();
@@ -483,6 +470,42 @@ public class BookStoreTest {
 		List<Book> topRatedBook = client.getTopRatedBooks(3);
 		assertEquals(topRatedBook.size(), 3);
 	}
+
+	@Test
+	public void testGetBooksInDemand() throws BookStoreException {
+		Set<StockBook> booksInDemand = new HashSet<>();
+
+		// Books to add to the storeManager
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 1, "The Art of Computer Programming", "Donald Knuth",
+				(float) 300, NUM_COPIES, 0, 0, 0, false));
+		booksToAdd.add(new ImmutableStockBook(TEST_ISBN + 2, "The C Programming Language",
+				"Dennis Ritchie and Brian Kerninghan", (float) 50, NUM_COPIES, 0, 0, 0, false));
+		storeManager.addBooks(booksToAdd);
+		booksInDemand.add(getDefaultBook());
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		booksToBuy.add(new BookCopy(TEST_ISBN, 6));
+
+		try {
+			client.buyBooks(booksToBuy);
+		} catch (BookStoreException ex) {
+			;
+		}
+
+		List<StockBook> listBooks = storeManager.getBooksInDemand();
+
+		assertTrue(listBooks.containsAll(booksInDemand));
+	}
+
+	@Test
+	public void testGetBooksInDemandNonExisting() throws BookStoreException {
+		//Trying to buy a book that does not exist.
+		List<StockBook> listBooks = storeManager.getBooksInDemand();
+		assertTrue(listBooks.size() == 0);
+	}
+
+
+
 	/**
 	 * Tear down after class.
 	 *
