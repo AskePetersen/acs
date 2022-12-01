@@ -359,6 +359,7 @@ public class CertainBookStore implements BookStore, StockManager {
 			throw new BookStoreException(BookStoreConstants.NULL_INPUT);
 		}
 		BookStoreBook book;
+		// We validate all our ratings before acting
 		for (BookRating bookRating : bookRatings) {
 			int rating = bookRating.getRating();
 			int isbn = bookRating.getISBN();
@@ -366,6 +367,10 @@ public class CertainBookStore implements BookStore, StockManager {
 			if (rating < 0 || rating > 5) {
 				throw new BookStoreException("Invalid Rating");
 			}
+		}
+		for (BookRating bookRating : bookRatings) {
+			int rating = bookRating.getRating();
+			int isbn = bookRating.getISBN();
 			book = bookMap.get(isbn);
 			book.addRating(rating);
 		}
