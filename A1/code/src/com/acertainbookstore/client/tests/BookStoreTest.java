@@ -2,9 +2,11 @@ package com.acertainbookstore.client.tests;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
 
 import com.acertainbookstore.business.*;
 import org.junit.After;
@@ -34,7 +36,7 @@ public class BookStoreTest {
 	private static final int NUM_COPIES = 5;
 
 	/** The local test. */
-	private static boolean localTest = true;
+	private static boolean localTest = false;
 
 	/** The store manager. */
 	private static StockManager storeManager;
@@ -385,7 +387,7 @@ public class BookStoreTest {
 		Set<StockBook> booksToAdd = new HashSet<StockBook>();
 		booksToAdd.add(artOfTheDeal());
 		booksToAdd.add(onTheRoad());
-
+		storeManager.addBooks(booksToAdd);
 		booksToRate.add(new BookRating(TEST_ISBN, 5));
 		booksToRate.add(new BookRating(TEST_ISBN + 3, 5));
 		booksToRate.add(new BookRating(TEST_ISBN + 4, 5));
@@ -393,7 +395,47 @@ public class BookStoreTest {
 		booksToRate.add(new BookRating(TEST_ISBN + 1, 6)); //This one does not exist.
 		client.rateBooks(booksToRate);
 	}
+
 	@Test
+	public void testRateBookNoChange() throws BookStoreException{
+		Set <BookRating> booksToRate = new HashSet<>();
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		HashSet<Integer> isbnList = new HashSet<Integer>();
+		booksToAdd.add(artOfTheDeal());
+		booksToAdd.add(onTheRoad());
+		storeManager.addBooks(booksToAdd);
+
+		booksToRate.add(new BookRating(TEST_ISBN, 5));
+		isbnList.add(TEST_ISBN);
+		booksToRate.add(new BookRating(TEST_ISBN + 3, 5));
+		isbnList.add(TEST_ISBN + 3);
+		booksToRate.add(new BookRating(TEST_ISBN + 4, 5));
+		isbnList.add(TEST_ISBN + 4);
+		booksToRate.add(new BookRating(TEST_ISBN + 1, 6)); //This one does not exist.
+		List<StockBook> booksPre = storeManager.getBooksByISBN(isbnList);
+		ArrayList<Float> preRatings = new ArrayList<Float>();
+		for (StockBook book: booksPre) {
+			Float rating = book.getAverageRating();
+			preRatings.add(rating);
+		}
+
+		try {
+			client.rateBooks(booksToRate);
+			fail();
+			}
+		catch (BookStoreException ex){
+			;
+		}
+
+		List<StockBook> booksPost = storeManager.getBooksByISBN(isbnList);
+		ArrayList<Float> postRatings = new ArrayList<Float>();
+		for (StockBook book: booksPost) {
+			float rating = book.getAverageRating();
+			postRatings.add(rating);
+		}
+		assertEquals(preRatings, postRatings);
+	}
+ 	@Test
 	public void testGetTopRated() throws BookStoreException {
 		Set<StockBook> booksToAdd = new HashSet<StockBook>();
 		Set<StockBook> twoTop = new HashSet<StockBook>();

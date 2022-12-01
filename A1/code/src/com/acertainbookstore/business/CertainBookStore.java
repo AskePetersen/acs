@@ -360,15 +360,22 @@ public class CertainBookStore implements BookStore, StockManager {
 		}
 		BookStoreBook book;
 		// We validate all our ratings before acting
-		for (BookRating bookRating : bookRatings) {
-			int rating = bookRating.getRating();
-			int isbn = bookRating.getISBN();
-			validateISBNInStock(isbn);
-			if (rating < 0 || rating > 5) {
-				throw new BookStoreException("Invalid Rating");
+		try {
+			for (BookRating bookRating : bookRatings) {
+				int rating = bookRating.getRating();
+				int isbn = bookRating.getISBN();
+				validateISBNInStock(isbn);
+				System.out.println("We are here");
+				if (rating < 0 || rating > 5) {
+					throw new BookStoreException("Invalid Rating");
+				}
 			}
 		}
+		catch (BookStoreException ex) {
+			throw new BookStoreException(ex);
+		}
 		for (BookRating bookRating : bookRatings) {
+			System.out.print("We are rating the books");
 			int rating = bookRating.getRating();
 			int isbn = bookRating.getISBN();
 			book = bookMap.get(isbn);

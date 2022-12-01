@@ -115,7 +115,11 @@ public class BookStoreHTTPProxy implements BookStore {
 				serializer.get());
 		return (List<Book>) bookStoreResponse.getList();
 	}
-
+	public void rateBooks(Set<BookRating> bookRatings) throws BookStoreException{
+		String urlString = serverAddress + "/" + BookStoreMessageTag.RATEBOOKS;
+		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, bookRatings);
+		BookStoreUtility.performHttpExchange(client, bookStoreRequest, serializer.get());
+	}
 
 
 
@@ -179,12 +183,7 @@ public class BookStoreHTTPProxy implements BookStore {
 	 *
 	 * @see com.acertainbookstore.interfaces.BookStore#rateBooks(java.util.Set)
 	 */
-	@Override
-	public void rateBooks(Set<BookRating> bookRatings) throws BookStoreException{
-		String urlString = serverAddress + "/" + BookStoreMessageTag.RATEBOOKS;
-		BookStoreRequest bookStoreRequest = BookStoreRequest.newPostRequest(urlString, bookRatings);
-		BookStoreUtility.performHttpExchange(client, bookStoreRequest, serializer.get());
-	}
+
 
 	/*
 	 * (non-Javadoc)
