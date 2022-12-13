@@ -364,17 +364,47 @@ public class BookStoreTest {
 	}
 
 
+	@Test
+	public void testBuyInvalidISBN() throws BookStoreException {
+		List<StockBook> booksInStorePreTest = storeManager.getBooks();
+
+		// Try to buy a book with invalid ISBN.
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		booksToBuy.add(new BookCopy(TEST_ISBN, 1)); // valid
+		booksToBuy.add(new BookCopy(-1, 1)); // invalid
+
+		// Try to buy the books.
+		try {
+			client.buyBooks(booksToBuy);
+			fail();
+		} catch (BookStoreException ex) {
+			;
+		}
+
+		List<StockBook> booksInStorePostTest = storeManager.getBooks();
+
+		// Check pre and post state are same.
+		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
+				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+	}
+
 	public void testAsync() throws BookStoreException {
-		Set<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		List<StockBook> booksInStorePreTest = storeManager.getBooks();
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
 		booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+		Set<BookCopy> booksToAdd = new Set<BookCopy>();
+		booksToAdd.add(new BookCopy(TEST_ISBN, 5));
+
 		new Thread(() -> {
 			// Try to buy books
 			client.buyBooks(booksToBuy);
 		}).start();
+
 		new Thread(() -> {
-			Default = getDefaultBook()
-			Default.addCopies(5)
+			storeManager.addCopies(booksToAdd);
 		}).start();
+
+
 	}
 
 	/**
