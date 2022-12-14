@@ -364,19 +364,66 @@ public class BookStoreTest {
 	}
 
 
-	public void testAsync() throws BookStoreException {
-		Set<BookCopy> booksToBuy = new HashSet<BookCopy>();
-		booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
-		new Thread(() -> {
-			// Try to buy books
-			client.buyBooks(booksToBuy);
-		}).start();
-		new Thread(() -> {
-			Default = getDefaultBook()
-			Default.addCopies(5)
-		}).start();
-	}
+	/*@Test
+	public void testBuyInvalidISBN() throws BookStoreException {
+		List<StockBook> booksInStorePreTest = storeManager.getBooks();
 
+		// Try to buy a book with invalid ISBN.
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		booksToBuy.add(new BookCopy(TEST_ISBN, 1)); // valid
+		booksToBuy.add(new BookCopy(-1, 1)); // invalid
+
+		// Try to buy the books.
+		try {
+			client.buyBooks(booksToBuy);
+			fail();
+		} catch (BookStoreException ex) {
+			;
+		}
+
+		List<StockBook> booksInStorePostTest = storeManager.getBooks();
+
+		// Check pre and post state are same.
+		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
+				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+	} */
+	@Test
+	public void testAsync() throws BookStoreException {
+		List<StockBook> booksInStorePreTest = storeManager.getBooks();
+		System.out.println(booksInStorePreTest);
+		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+		booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+		HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
+		booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+
+		Thread t1 = new Thread(() -> {
+			try {
+				client.buyBooks(booksToBuy);
+			} catch (BookStoreException e) {
+				;
+			}
+		});
+		List<StockBook> booksInStorePostTest = storeManager.getBooks();
+		System.out.println(booksInStorePostTest);
+		Thread t2 = new Thread(() -> {
+			System.out.println("Thread 2 up");
+		});
+		t2.start();
+		t1.start();
+			/* Try to buy books
+			try {
+				client.buyBooks(booksToBuy);
+				fail();
+			} catch (BookStoreException e) {
+				fail();
+				;
+			} */
+
+
+
+		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
+				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+	}
 	/**
 	 * Tear down after class.
 	 *
