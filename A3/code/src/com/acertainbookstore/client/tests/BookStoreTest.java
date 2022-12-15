@@ -403,10 +403,12 @@ public class BookStoreTest {
 		class Client1 implements Runnable {
 			// Buy books
 			public void run() {
+				int delete = 1;
 				HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
 				booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
 				try {
 					client.buyBooks(booksToBuy);
+
 				} catch (BookStoreException e) {
 					;
 				}
