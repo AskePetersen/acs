@@ -38,7 +38,7 @@ public class BookStoreTest {
 	private static boolean localTest = true;
 
 	/** Single lock test */
-	private static boolean singleLock = true;
+	private static boolean singleLock = false;
 
 	
 	/** The store manager. */
@@ -482,10 +482,9 @@ public class BookStoreTest {
 					}
 					Integer stockSize = stock.size();
 					for (int j = 0; j < stockSize; j++) {
-							if (i % 100 == 0) {
-							Integer count_j = stock.get(j).getNumCopies();
-							assertTrue(count_j == NUM_COPIES || count_j == 0);
-						}
+						Integer count_j = stock.get(j).getNumCopies();
+						assertTrue(count_j == NUM_COPIES || count_j == 0);
+
 					}
 				}
 			}
