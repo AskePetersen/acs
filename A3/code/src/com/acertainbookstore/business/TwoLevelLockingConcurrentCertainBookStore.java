@@ -247,7 +247,7 @@ public class TwoLevelLockingConcurrentCertainBookStore implements BookStore, Sto
 	 * @see com.acertainbookstore.interfaces.BookStore#buyBooks(java.util.Set)
 	 */
 	public void buyBooks(Set<BookCopy> bookCopiesToBuy) throws BookStoreException {
-		globalLock.writeLock().lock();
+		globalLock.readLock().lock();
 		try {
 			if (bookCopiesToBuy == null) {
 				throw new BookStoreException(BookStoreConstants.NULL_INPUT);
@@ -262,13 +262,11 @@ public class TwoLevelLockingConcurrentCertainBookStore implements BookStore, Sto
 
 			for (BookCopy bookCopyToBuy : bookCopiesToBuy) {
 				isbn = bookCopyToBuy.getISBN();
+				validate(bookCopyToBuy);
 				ReentrantReadWriteLock readLock = lockMap.get(isbn);
-				readLock.readLock();
+				readLock.readLock().lock();
 				try {
-					validate(bookCopyToBuy);
-
 					book = bookMap.get(isbn);
-
 					if (!book.areCopiesInStore(bookCopyToBuy.getNumCopies())) {
 						// If we cannot sell the copies of the book, it is a miss.
 						salesMisses.put(isbn, bookCopyToBuy.getNumCopies() - book.getNumCopies());
@@ -276,7 +274,7 @@ public class TwoLevelLockingConcurrentCertainBookStore implements BookStore, Sto
 					}
 				}
 				finally {
-					;
+					readLock.readLock().unlock();
 				}
 			}
 
@@ -292,12 +290,20 @@ public class TwoLevelLockingConcurrentCertainBookStore implements BookStore, Sto
 
 			// Then make the purchase.
 			for (BookCopy bookCopyToBuy : bookCopiesToBuy) {
-				book = bookMap.get(bookCopyToBuy.getISBN());
-				book.buyCopies(bookCopyToBuy.getNumCopies());
+				isbn = bookCopyToBuy.getISBN();
+				book = bookMap.get(isbn);
+				ReentrantReadWriteLock writeLock = lockMap.get(isbn);
+				writeLock.writeLock().lock();
+				try {
+					book.buyCopies(bookCopyToBuy.getNumCopies());
+				}
+				finally {
+					writeLock.writeLock().unlock();
+				}
 			}
 		}
 		finally {
-			globalLock.writeLock().unlock();
+			globalLock.readLock().unlock();
 		}
 	}
 
