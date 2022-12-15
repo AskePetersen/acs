@@ -6,18 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.acertainbookstore.business.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.acertainbookstore.business.Book;
-import com.acertainbookstore.business.BookCopy;
-import com.acertainbookstore.business.SingleLockConcurrentCertainBookStore;
-import com.acertainbookstore.business.ImmutableStockBook;
-import com.acertainbookstore.business.StockBook;
-import com.acertainbookstore.business.TwoLevelLockingConcurrentCertainBookStore;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
 import com.acertainbookstore.client.StockManagerHTTPProxy;
 import com.acertainbookstore.interfaces.BookStore;
@@ -51,6 +46,9 @@ public class BookStoreTest {
 	/** The client. */
 	private static BookStore client;
 
+	private List<StockBook> temp1;
+	private List<StockBook> temp2;
+
 	/**
 	 * Sets the up before class.
 	 */
@@ -83,6 +81,8 @@ public class BookStoreTest {
 			e.printStackTrace();
 		}
 	}
+
+
 
 	/**
 	 * Helper method to add some books.
@@ -124,6 +124,11 @@ public class BookStoreTest {
 		booksToAdd.add(getDefaultBook());
 		storeManager.addBooks(booksToAdd);
 	}
+
+
+
+
+
 
 	/**
 	 * Method to clean up the book store, execute after every test case is run.
@@ -387,42 +392,124 @@ public class BookStoreTest {
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
 	} */
+
+	// LATER USE
+	// 		booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+	// 		HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
+
+
 	@Test
-	public void testAsync() throws BookStoreException {
-		List<StockBook> booksInStorePreTest = storeManager.getBooks();
-		System.out.println(booksInStorePreTest);
-		HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
-		booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
-		HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
-		booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
-
-		Thread t1 = new Thread(() -> {
-			try {
-				client.buyBooks(booksToBuy);
-			} catch (BookStoreException e) {
-				;
+	public void testAsync1() throws BookStoreException {
+		class Client1 implements Runnable {
+			// Buy books
+			public void run() {
+				HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+				booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+				try {
+					client.buyBooks(booksToBuy);
+				} catch (BookStoreException e) {
+					;
+				}
 			}
-		});
-		List<StockBook> booksInStorePostTest = storeManager.getBooks();
-		System.out.println(booksInStorePostTest);
-		Thread t2 = new Thread(() -> {
-			System.out.println("Thread 2 up");
-		});
-		t2.start();
+		}
+		class Client2 implements Runnable {
+			// Adds books
+			public void run() {
+				HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
+				booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+				System.out.println(booksToAdd);
+				try {
+					storeManager.addCopies(booksToAdd);
+				} catch (BookStoreException e) {
+					System.out.println(e);;
+				}
+			}
+		}
+		HashSet<Integer> isbnSet = new HashSet<Integer>();
+		isbnSet.add(TEST_ISBN);
+		List<StockBook> booksInStorePreTest = storeManager.getBooksByISBN(isbnSet);
+		Thread t1 = new Thread(new Client1());
+		Thread t2 = new Thread(new Client2());
 		t1.start();
-			/* Try to buy books
+		t2.start();
+		try {
+			t1.join();
+		} catch (InterruptedException e) {
+			fail();
+		}
+		try {
+			t2.join();
+		} catch (InterruptedException e) {
+			fail();
+		}
+		List<StockBook> booksInStorePostTest = storeManager.getBooksByISBN(isbnSet);
+		assertEquals(booksInStorePreTest.get(0).getNumCopies(),
+				booksInStorePostTest.get(0).getNumCopies());
+	}
+
+	@Test
+	public void testAsync2() throws BookStoreException {
+		class Client1 implements Runnable {
+			// Buy books
+			public void run() {
+				HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
+				booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+				HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
+				booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES-1));
+				try {
+					client.buyBooks(booksToBuy);
+					storeManager.addCopies(booksToAdd);
+				} catch (BookStoreException e) {
+					System.out.println(e);
+				}
+			}
+		}
+		class Client2 implements Runnable {
+			// Adds books
+			public void run() {
+				try {
+					temp1 = storeManager.getBooks();
+				} catch (BookStoreException e) {
+					System.out.println(e);;
+				}
+
+			}
+		}
+		int invocations = 10;
+		HashSet<Integer> isbnSet = new HashSet<Integer>();
+		isbnSet.add(TEST_ISBN);
+		List<StockBook> booksInStorePreTest = storeManager.getBooksByISBN(isbnSet);
+		Thread t1 = new Thread(new Client1());
+		Thread t2 = new Thread(new Client2());
+
+		t1.start();
+		t2.start();
+		try {
+			t2.join();
+		} catch (InterruptedException e) {
+			fail();
+		}
+		temp2 = temp1;
+
+		for (int i = 0; i < invocations; i++) {
+
 			try {
-				client.buyBooks(booksToBuy);
+				t1.join();
+			} catch (InterruptedException e) {
 				fail();
-			} catch (BookStoreException e) {
+			}
+			try {
+				t2.join();
+			} catch (InterruptedException e) {
 				fail();
-				;
-			} */
+			}
 
-
-
-		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
-				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+			int length =  temp1.size();
+			for (int j = 0; j < length; j++) {
+				assertEquals(temp1.get(j).getNumCopies(), temp2.get(j).getNumCopies());
+			}
+			temp2 = temp1;
+		}
 	}
 	/**
 	 * Tear down after class.
