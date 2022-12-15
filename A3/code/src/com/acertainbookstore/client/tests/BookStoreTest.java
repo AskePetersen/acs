@@ -113,6 +113,15 @@ public class BookStoreTest {
 				false);
 	}
 
+	public StockBook onTheRoad() {
+		return new ImmutableStockBook(TEST_ISBN + 3, "On The Road",
+				"Jack Kerouac", (float) 300, NUM_COPIES, 0, 0,
+				0, false);
+	}
+	public StockBook artOfTheDeal() {
+		return new ImmutableStockBook(TEST_ISBN + 4, "Art of The Deal", "Donald Trump", (float) 10, NUM_COPIES,
+				0,0,0,false);
+	}
 	/**
 	 * Method to add a book, executed before every test case is run.
 	 *
@@ -399,7 +408,11 @@ public class BookStoreTest {
 	// 		HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
 
 
-	//TODO: Maybe extend the number of books, such that we do not only evaluate one book, but a set of books.
+	/**
+	 * Tests that number of copies are preserved after one thread buys a collection of books, and another adds them
+	 * again.
+	 * @throws BookStoreException
+	 */
 	@Test
 	public void testAsync1() throws BookStoreException {
 		class Client1 implements Runnable {
@@ -421,11 +434,10 @@ public class BookStoreTest {
 			public void run() {
 				HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
 				booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
-				System.out.println(booksToAdd);
 				try {
 					storeManager.addCopies(booksToAdd);
 				} catch (BookStoreException e) {
-					System.out.println(e);;
+					;
 				}
 			}
 		}
@@ -450,10 +462,17 @@ public class BookStoreTest {
 		assertEquals(booksInStorePreTest.get(0).getNumCopies(),
 				booksInStorePostTest.get(0).getNumCopies());
 	}
-	//TODO: Maybe extend the number of books, such that we do not only evaluate one book, but a set of books.
+
+	/**
+	 * Tests that the books in store are consistent when a thread buys and adds copies 10000 times.
+	 *
+	 * @throws BookStoreException
+	 *             the book store exception
+	 */
+
 	@Test
 	public void testAsync2() throws BookStoreException {
-		Integer invocations = 1000;
+		Integer invocations = 10000;
 		class Client1 implements Runnable {
 			// Buy books
 			public void run() {
@@ -466,7 +485,7 @@ public class BookStoreTest {
 						client.buyBooks(booksToBuy);
 						storeManager.addCopies(booksToAdd);
 					} catch (BookStoreException e) {
-						System.out.println(e);
+						;
 					}
 				}
 			}
@@ -484,7 +503,6 @@ public class BookStoreTest {
 					for (int j = 0; j < stockSize; j++) {
 						Integer count_j = stock.get(j).getNumCopies();
 						assertTrue(count_j == NUM_COPIES || count_j == 0);
-
 					}
 				}
 			}
@@ -497,24 +515,97 @@ public class BookStoreTest {
 		try {
 			t1.join();
 		} catch (InterruptedException e) {
-			System.out.println(e);
+			;
 		}
 		try {
 			t2.join();
 		} catch (InterruptedException e) {
-			System.out.println(e);
+			;
 		}
 	}
 	/**
-	 * Tear down after class.
+	 * Tests the same as async2, only with more books.
+	 * and one that adds the book again. Does this 10000 times.
 	 *
 	 * @throws BookStoreException
 	 *             the book store exception
 	 */
+
+
+
+	@Test
+	public void testBlastAtSame() throws BookStoreException {
+		Integer invocations = 10000;
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		Integer defaultISBN = TEST_ISBN;
+		Integer OTRISBN = TEST_ISBN + 3;
+		Integer ATDISBN = TEST_ISBN + 4;
+		booksToAdd.add(onTheRoad());
+		booksToAdd.add(artOfTheDeal());
+		storeManager.addBooks(booksToAdd);
+		class ClientAddBuy implements Runnable {
+			public void run() {
+				HashSet<BookCopy> booksToAddCopy = new HashSet<BookCopy>();
+				booksToAddCopy.add(new BookCopy(defaultISBN, NUM_COPIES));
+				booksToAddCopy.add(new BookCopy(OTRISBN, NUM_COPIES));
+				booksToAddCopy.add(new BookCopy(ATDISBN, NUM_COPIES));
+				HashSet<BookCopy> booksToBuyCopy = new HashSet<BookCopy>();
+				booksToBuyCopy.add(new BookCopy(defaultISBN, NUM_COPIES));
+				booksToBuyCopy.add(new BookCopy(OTRISBN, NUM_COPIES));
+				booksToBuyCopy.add(new BookCopy(ATDISBN, NUM_COPIES));
+				for (int i = 0; i < invocations; i++) {
+					try {
+						storeManager.addCopies(booksToAddCopy);
+						client.buyBooks(booksToBuyCopy);
+					} catch (BookStoreException e) {
+						System.out.println(e);
+					}
+				}
+			}
+		}
+
+		class ClientCheck implements Runnable{
+			public void run(){
+				List <StockBook> stock = new ArrayList<StockBook>();
+				for (int i = 0; i < invocations; i++) {
+					try {
+						stock = storeManager.getBooks();
+					} catch (BookStoreException e) {
+						;
+					}
+					Integer stockSize = stock.size();
+					for (int j = 0; j < stockSize; j++) {
+						Integer count_j = stock.get(j).getNumCopies();
+						try {
+							assertTrue(count_j == NUM_COPIES || count_j == NUM_COPIES*2);
+						}
+						catch (AssertionError e) {
+							System.out.println(e);
+						}
+
+					}
+				}
+			}
+		}
+
+		Thread t1 = new Thread(new ClientAddBuy());
+		Thread t2 = new Thread(new ClientCheck());
+		t1.start();
+		t2.start();
+		try {
+			t1.join();
+		} catch (InterruptedException e) {
+			;
+		}
+		try {
+			t2.join();
+		} catch (InterruptedException e) {
+			;
+		}
+	}
 	@AfterClass
 	public static void tearDownAfterClass() throws BookStoreException {
 		storeManager.removeAllBooks();
-
 		if (!localTest) {
 			((BookStoreHTTPProxy) client).stop();
 			((StockManagerHTTPProxy) storeManager).stop();
