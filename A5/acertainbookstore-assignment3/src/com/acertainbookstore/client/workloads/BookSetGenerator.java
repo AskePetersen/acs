@@ -1,9 +1,6 @@
 package com.acertainbookstore.client.workloads;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Random;
+import java.util.*;
 
 import com.acertainbookstore.business.StockBook;
 
@@ -23,13 +20,28 @@ public class BookSetGenerator {
 	 * @param num
 	 * @return
 	 */
-	public Set<Integer> sampleFromSetOfISBNs(Set<Integer> isbns, int num) {
+
+	public static Set<Integer> sampleFromSetOfISBNs(Set<Integer> isbns, int num) {
+		// in every iteration
+		// Generate random number in range 0.. length(isbns)
+		// Add this index to the result list
+		// remove the element from the original list
+
 		Set<Integer> result = new HashSet<Integer>();
+		List<Integer> lstIsbns = new ArrayList<>(isbns);
 		Random random = new Random();
-		int initLength = isbns.size();
+		int lstLength = isbns.size();
 		for (int i = 0; i < num; i++) {
-			random.nextInt();
+			lstLength = lstLength - 1;
+			int idx = random.nextInt(lstLength);
+			System.out.println(idx);
+			int var = lstIsbns.get(idx);
+			result.add(var);
+			lstIsbns.remove(idx);
 		}
+
+
+
 
 		return result;
 
@@ -42,6 +54,23 @@ public class BookSetGenerator {
 	 * @return
 	 */
 	public Set<StockBook> nextSetOfStockBooks(int num) {
+		Random random = new Random();
+		for (int i = 0; i < num; i++) {
+			// The same ISBN might occur multiple times, but the risk is low
+			int isbn = random.nextInt(100000000);
+
+
+			/* We must generate random:
+			isbn
+			title
+			author
+			price
+			num copies
+			*/
+
+
+		}
+
 		return null;
 	}
 

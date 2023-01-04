@@ -2,10 +2,13 @@ package com.acertainbookstore.client.tests;
 
 import static org.junit.Assert.*;
 
+import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
+import com.acertainbookstore.client.workloads.BookSetGenerator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -347,6 +350,27 @@ public class BookStoreTest {
 		List<StockBook> booksInStorePostTest = storeManager.getBooks();
 		assertTrue(booksInStorePreTest.containsAll(booksInStorePostTest)
 				&& booksInStorePreTest.size() == booksInStorePostTest.size());
+	}
+
+	// Should remove static keyword
+	@Test
+	public void testSampleFromSetOfISBNs() throws BookStoreException {
+		Set<Integer> input = new HashSet<Integer>();
+		for (int i = 0; i < 6; i++) {
+			input.add(i+100);
+		}
+		int num = 3;
+		Set<Integer> res = BookSetGenerator.sampleFromSetOfISBNs(input, num);
+		assertEquals(res,res);
+	}
+
+	@Test
+	public void RandomString() {
+		byte[] array = new byte[7];
+		new Random().nextBytes(array);
+		String generatedString = new String(array, Charset.forName("UTF-8"));
+
+		System.out.println(generatedString);
 	}
 
 	/**
