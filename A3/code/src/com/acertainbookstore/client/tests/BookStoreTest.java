@@ -427,7 +427,6 @@ public class BookStoreTest {
 			// Buy books
 			public void run() {
 				for (int i = 0; i < param; i++) {
-
 					int delete = 1;
 					HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
 					booksToBuy.add(new BookCopy(TEST_ISBN+i, NUM_COPIES));
@@ -493,17 +492,25 @@ public class BookStoreTest {
 
 	@Test
 	public void testAsync2() throws BookStoreException {
+		int param = 5;
+		Set<StockBook> booksToAdd = new HashSet<StockBook>();
+		for (int i = 1; i < param; i++) {
+			booksToAdd.add(new ImmutableStockBook(TEST_ISBN + i, String.format("test book %d", i), "Donald Knuth",
+					(float) 300, NUM_COPIES, 0, 0, 0, false));
+		}
+
+		storeManager.addBooks(booksToAdd);
 		Integer invocations = 10000;
 		class Client1 implements Runnable {
 			// Buy books
 			public void run() {
-				HashSet<BookCopy> booksToBuy = new HashSet<BookCopy>();
-				booksToBuy.add(new BookCopy(TEST_ISBN, NUM_COPIES));
 				HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
-				booksToAdd.add(new BookCopy(TEST_ISBN, NUM_COPIES));
+				for (int i = 0; i < param; i++) {
+					booksToAdd.add(new BookCopy(TEST_ISBN + i, NUM_COPIES));
+				}
 				for (int i = 0; i < invocations; i++) {
 					try {
-						client.buyBooks(booksToBuy);
+						client.buyBooks(booksToAdd);
 						storeManager.addCopies(booksToAdd);
 					} catch (BookStoreException e) {
 						;
@@ -521,14 +528,14 @@ public class BookStoreTest {
 						;
 					}
 					Integer stockSize = stock.size();
+					int count = stock.get(0).getNumCopies();
 					for (int j = 0; j < stockSize; j++) {
 						Integer count_j = stock.get(j).getNumCopies();
-						assertTrue(count_j == NUM_COPIES || count_j == 0);
+						assertTrue((count_j == NUM_COPIES && count_j == count) || (count_j == 0 && count_j == count) );
 					}
 				}
 			}
 		}
-
 		Thread t1 = new Thread(new Client1());
 	 	Thread t2 = new Thread(new Client2());
 		t1.start();
@@ -611,8 +618,12 @@ public class BookStoreTest {
 
 		Thread t1 = new Thread(new ClientAddBuy());
 		Thread t2 = new Thread(new ClientCheck());
+		Thread t3 = new Thread(new ClientAddBuy());
+		Thread t4 = new Thread(new ClientCheck());
 		t1.start();
 		t2.start();
+		t3.start();
+		t4.start();
 		try {
 			t1.join();
 		} catch (InterruptedException e) {
@@ -620,6 +631,16 @@ public class BookStoreTest {
 		}
 		try {
 			t2.join();
+		} catch (InterruptedException e) {
+			;
+		}
+		try {
+			t3.join();
+		} catch (InterruptedException e) {
+			;
+		}
+		try {
+			t4.join();
 		} catch (InterruptedException e) {
 			;
 		}
