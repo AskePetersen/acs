@@ -421,7 +421,6 @@ public class BookStoreTest {
 			booksToAdd.add(new ImmutableStockBook(TEST_ISBN + i, String.format("test book %d", i), "Donald Knuth",
 					(float) 300, NUM_COPIES, 0, 0, 0, false));
 		}
-
 		storeManager.addBooks(booksToAdd);
 		class Client1 implements Runnable {
 			// Buy books
@@ -441,6 +440,8 @@ public class BookStoreTest {
 		}
 		class Client2 implements Runnable {
 			// Adds books
+
+			// TODO LOOP it 1000 times
 			public void run() {
 				for (int i = 0; i < param; i++) {
 					HashSet<BookCopy> booksToAdd = new HashSet<BookCopy>();
