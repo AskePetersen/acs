@@ -1,18 +1,24 @@
 /**
- * 
+ *
  */
 package com.acertainbookstore.client.workloads;
 
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
+import com.acertainbookstore.business.CertainBookStore;
+import com.acertainbookstore.business.StockBook;
+import com.acertainbookstore.interfaces.BookStore;
+import com.acertainbookstore.interfaces.StockManager;
 import com.acertainbookstore.utils.BookStoreException;
 
 /**
- * 
+ *
  * Worker represents the workload runner which runs the workloads with
  * parameters using WorkloadConfiguration and then reports the results
- * 
+ *
  */
 public class Worker implements Callable<WorkerRunResult> {
     private WorkloadConfiguration configuration = null;
@@ -26,10 +32,10 @@ public class Worker implements Callable<WorkerRunResult> {
     /**
      * Run the appropriate interaction while trying to maintain the configured
      * distributions
-     * 
+     *
      * Updates the counts of total runs and successful runs for customer
      * interaction
-     * 
+     *
      * @param chooseInteraction
      * @return
      */
@@ -94,16 +100,25 @@ public class Worker implements Callable<WorkerRunResult> {
 
     /**
      * Runs the new stock acquisition interaction
-     * 
+     *
      * @throws BookStoreException
      */
+
+	// Should remove static keyword and should be private
     private void runRareStockManagerInteraction() throws BookStoreException {
-	// TODO: Add code for New Stock Acquisition Interaction
+
+		StockManager storeManager = configuration.getStockManager();
+		List<StockBook> var1 = storeManager.getBooks();
+		Set<StockBook> books = BookSetGenerator.nextSetOfStockBooks(5);
+		books.removeAll(var1);
+
+		storeManager.addBooks(books);
+
     }
 
     /**
      * Runs the stock replenishment interaction
-     * 
+     *
      * @throws BookStoreException
      */
     private void runFrequentStockManagerInteraction() throws BookStoreException {
@@ -112,7 +127,7 @@ public class Worker implements Callable<WorkerRunResult> {
 
     /**
      * Runs the customer interaction
-     * 
+     *
      * @throws BookStoreException
      */
     private void runFrequentBookStoreInteraction() throws BookStoreException {

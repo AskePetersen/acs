@@ -3,13 +3,13 @@
  */
 package com.acertainbookstore.client.workloads;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.acertainbookstore.business.CertainBookStore;
+import com.acertainbookstore.business.StockBook;
 import com.acertainbookstore.client.BookStoreHTTPProxy;
 import com.acertainbookstore.client.StockManagerHTTPProxy;
 import com.acertainbookstore.interfaces.BookStore;
@@ -91,6 +91,15 @@ public class CertainWorkload {
 	 * @param workerRunResults
 	 */
 	public static void reportMetric(List<WorkerRunResult> workerRunResults) {
+		float agg_throughput = 0f;
+		float upper;
+		long lower;
+		for (WorkerRunResult res: workerRunResults) {
+			upper = (float) res.getSuccessfulInteractions();
+			lower = res.getElapsedTimeInNanoSecs();
+			agg_throughput += upper/lower;
+		}
+		System.out.println(agg_throughput);
 		// TODO: You should aggregate metrics and output them for plotting here
 	}
 
@@ -100,10 +109,11 @@ public class CertainWorkload {
 	 * Ignores the serverAddress if its a localTest
 	 * 
 	 */
-	public static void initializeBookStoreData(BookStore bookStore,
-			StockManager stockManager) throws BookStoreException {
-
-		// TODO: You should initialize data for your bookstore here
+	public static void initializeBookStoreData(BookStore bookStore, StockManager storeManager) throws BookStoreException {
+		Random random = new Random();
+		// add books to the store manager
+		Set<StockBook> books = BookSetGenerator.nextSetOfStockBooks(5);
+		storeManager.addBooks(books);
 
 	}
 }

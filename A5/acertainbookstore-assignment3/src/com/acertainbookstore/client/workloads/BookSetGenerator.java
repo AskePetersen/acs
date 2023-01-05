@@ -2,6 +2,7 @@ package com.acertainbookstore.client.workloads;
 
 import java.util.*;
 
+import com.acertainbookstore.business.ImmutableStockBook;
 import com.acertainbookstore.business.StockBook;
 
 /**
@@ -21,6 +22,7 @@ public class BookSetGenerator {
 	 * @return
 	 */
 
+	// Shouldn't be static
 	public static Set<Integer> sampleFromSetOfISBNs(Set<Integer> isbns, int num) {
 		// in every iteration
 		// Generate random number in range 0.. length(isbns)
@@ -40,7 +42,7 @@ public class BookSetGenerator {
 			lstIsbns.remove(idx);
 		}
 
-
+		// System.out.println(result);
 
 
 		return result;
@@ -53,25 +55,46 @@ public class BookSetGenerator {
 	 * @param num
 	 * @return
 	 */
-	public Set<StockBook> nextSetOfStockBooks(int num) {
+	public static Set<StockBook> nextSetOfStockBooks(int num) {
 		Random random = new Random();
+		Set<StockBook> res = new HashSet<StockBook>();
+
+		int isbn;
+		int price;
+		int numCopies;
+		String title;
+		String author;
 		for (int i = 0; i < num; i++) {
 			// The same ISBN might occur multiple times, but the risk is low
-			int isbn = random.nextInt(100000000);
+			isbn = random.nextInt(100000000);
+			price = random.nextInt(500);
+			numCopies = random.nextInt(5);
+			title = RandomString(10);
+			author = RandomString(5);
 
-
-			/* We must generate random:
-			isbn
-			title
-			author
-			price
-			num copies
-			*/
-
-
+			res.add(new ImmutableStockBook(isbn, title,
+					author, price, numCopies, 0, 0, 0, false));
 		}
 
-		return null;
+		return res;
 	}
+
+	public static String RandomString(int length) {
+		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+		StringBuilder str = new StringBuilder();
+
+		Random random = new Random();
+
+		for (int i = 0; i < length; i++) {
+			int idx = random.nextInt(chars.length());
+			char letter = chars.charAt(idx);
+			str.append(letter);
+		}
+		String res = str.toString();
+
+		return res;
+	}
+
 
 }

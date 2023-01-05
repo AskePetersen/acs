@@ -3,12 +3,10 @@ package com.acertainbookstore.client.tests;
 import static org.junit.Assert.*;
 
 import java.nio.charset.Charset;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import com.acertainbookstore.client.workloads.BookSetGenerator;
+import com.acertainbookstore.client.workloads.Worker;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -366,11 +364,60 @@ public class BookStoreTest {
 
 	@Test
 	public void RandomString() {
-		byte[] array = new byte[7];
-		new Random().nextBytes(array);
-		String generatedString = new String(array, Charset.forName("UTF-8"));
+		String res1 = BookSetGenerator.RandomString(7);
+		String res2 = BookSetGenerator.RandomString(7);
+		assertNotEquals(res1, res2);
+	}
 
-		System.out.println(generatedString);
+	@Test
+	public void TestGenerateRandomSetOfStockBooks() {
+		Set<StockBook> res1 = BookSetGenerator.nextSetOfStockBooks(5);
+		Set<StockBook> res2 = BookSetGenerator.nextSetOfStockBooks(5);
+		System.out.println(res1);
+		System.out.println(res2);
+		assertNotEquals(res1, res2);
+	}
+
+	@Test
+	public void TestStuff() throws BookStoreException {
+		List<StockBook> storeManagerBooks = storeManager.getBooks();
+		List<Integer> storeManagerISBNs = new ArrayList<Integer>();
+		for (StockBook book : storeManagerBooks) {
+			storeManagerISBNs.add(book.getISBN());
+		}
+
+		Set<StockBook> bookSetGeneratorBooks = BookSetGenerator.nextSetOfStockBooks(5);
+		List<StockBook> lstBookSetGeneratorBooks = new ArrayList<>(bookSetGeneratorBooks);
+		List<Integer> bookSetGeneratorISBNs = new ArrayList<Integer>();
+		for (StockBook book : lstBookSetGeneratorBooks) {
+			bookSetGeneratorISBNs.add(book.getISBN());
+		}
+
+		System.out.println(storeManagerISBNs);
+		System.out.println(bookSetGeneratorISBNs);
+
+
+
+		Set<Integer> test1 = new HashSet<Integer>();
+		test1.add(1);
+		test1.add(2);
+		test1.add(3);
+
+		List<Integer> test11 = new ArrayList<Integer>();
+		test11.add(1);
+		test11.add(2);
+		test11.add(3);
+
+		Set<Integer> test2 = new HashSet<Integer>();
+		test2.add(1);
+		test2.add(2);
+		test2.add(3);
+		test2.add(4);
+		test2.add(5);
+
+		boolean res = test2.removeAll(test11);
+		print(test2);
+
 	}
 
 	/**
@@ -387,5 +434,8 @@ public class BookStoreTest {
 			((BookStoreHTTPProxy) client).stop();
 			((StockManagerHTTPProxy) storeManager).stop();
 		}
+	}
+	private void print(Object s){
+		System.out.println(s);
 	}
 }
