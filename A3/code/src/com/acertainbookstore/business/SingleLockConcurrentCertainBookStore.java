@@ -413,7 +413,7 @@ public class SingleLockConcurrentCertainBookStore implements BookStore, StockMan
 	 * @see com.acertainbookstore.interfaces.StockManager#getBooksInDemand()
 	 */
 	@Override
-	public synchronized List<StockBook> getBooksInDemand() throws BookStoreException {
+	public  List<StockBook> getBooksInDemand() throws BookStoreException {
 		lock.readLock().lock();
 		try {
 			Collection<BookStoreBook> bookMapValues = bookMap.values();
@@ -432,7 +432,7 @@ public class SingleLockConcurrentCertainBookStore implements BookStore, StockMan
 	 * @see com.acertainbookstore.interfaces.BookStore#rateBooks(java.util.Set)
 	 */
 	@Override
-	public synchronized void rateBooks(Set<BookRating> bookRatings) throws BookStoreException {
+	public void rateBooks(Set<BookRating> bookRatings) throws BookStoreException {
 		lock.writeLock().lock();
 		try {
 			if (bookRatings == null) {

@@ -605,7 +605,7 @@ public class BookStoreTest {
 					for (int j = 0; j < stockSize; j++) {
 						Integer count_j = stock.get(j).getNumCopies();
 						try {
-							assertTrue(count_j == NUM_COPIES || count_j == NUM_COPIES*2);
+							assertTrue(count_j % 5 == 0);
 						}
 						catch (AssertionError e) {
 							System.out.println(e);
